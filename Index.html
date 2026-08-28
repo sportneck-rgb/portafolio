@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portafolio — Community Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600;9..144,900&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0b0b0e;
+    --bg-2: #131317;
+    --ink: #f2f0eb;
+    --ink-dim: #8c8a86;
+    --accent: #e8a33d;
+    --line: rgba(242,240,235,0.12);
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ---------- Escenario de scroll: UN solo recorrido para las 3 escenas ---------- */
+  .scroll-stage{
+    position: relative;
+    height: 620vh; /* texto -> proyecto 1 -> proyecto 2, todo en el mismo hero */
+  }
+
+  .hero{
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: grid;      /* grid para poder superponer las 3 escenas en el mismo lugar */
+    place-items: center;
+    overflow: hidden;
+    perspective: 1400px;
+    background:
+      radial-gradient(ellipse at 50% 40%, var(--bg-2) 0%, var(--bg) 70%);
+  }
+
+  .hero-bg-image{
+  position: absolute;
+  inset: 0;
+  background-image: url("6_Concepcion.gif"); /* <-- reemplaza esta URL por tu imagen */
+  background-size: cover;
+  background-position: center;
+  filter: blur(5px);
+  transform: scale(1.15); /* agranda un poco para que el blur no deje bordes vacíos */
+  z-index: 0;
+}
+
+  /* leve grano/viñeta para dar profundidad al fondo */
+  .hero::after{
+    content:"";
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%);
+    pointer-events:none;
+    z-index: 3;
+  }
+
+  /* cada escena ocupa la MISMA celda del grid -> quedan superpuestas */
+  .phase{
+    grid-row: 1;
+    grid-column: 1;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    will-change: opacity;
+  }
+
+  .eyebrow{
+    font-family:'Inter', sans-serif;
+    font-size: 0.95rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--accent);
+    opacity: 0;
+    transform: translateY(10px);
+    margin-bottom: 1.4rem;
+  }
+
+  .hero-text{
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-optical-sizing: auto;
+    font-size: clamp(2rem, 9vw, 8rem);
+    line-height: 0.92;
+    text-align: center;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    will-change: transform, filter, text-shadow;
+    transform-style: preserve-3d;
+  }
+
+  .subtitle{
+    font-family:'Inter', sans-serif;
+    font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+    color: var(--ink-dim);
+    max-width: 32ch;
+    text-align:center;
+    margin-top: 1.6rem;
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  /* ---------- Proyectos: misma lógica de acercamiento, cada uno con su eje ---------- */
+  .project-media{
+    width: min(80vw, 920px);
+    aspect-ratio: 16 / 10;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    /*border: 1px solid var(--line);
+    box-shadow: 0 40px 90px rgba(0,0,0,0.5); */
+    background: transparent; /*background: linear-gradient(135deg, var(--bg-2), #1a1c22); */
+    will-change: transform, filter;
+    transform-style: preserve-3d;
+  }
+
+  .project-media img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain !important; /*object-fit: cover; */
+    display: block;
+  }
+
+  /* ---------- Slider dentro de cada proyecto (varias imágenes) ---------- */
+  .slider{
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .slider-track{
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform .6s cubic-bezier(.65,.05,.36,1);
+  }
+
+  .slider-track .slide{
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    object-fit: contain !important; /*object-fit: cover; */
+    display: block;
+  }
+
+  .slider-arrow{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: rgba(11,11,14,0.55);
+    color: var(--ink);
+    font-size: 1.2rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: background .2s ease, border-color .2s ease, color .2s ease;
+    z-index: 2;
+  }
+  .slider-arrow:hover{
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0b0b0e;
+  }
+  .slider-arrow.prev{ left: 12px; }
+  .slider-arrow.next{ right: 12px; }
+
+  .slider-dots{
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 2;
+  }
+  .slider-dots button{
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(242,240,235,0.35);
+    cursor: pointer;
+    padding: 0;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .slider-dots button.active{
+    background: var(--accent);
+    transform: scale(1.3);
+  }
+
+  /* placeholder visible mientras no hay imagen real — bórralo al poner tu <img> */
+  .project-placeholder{
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-dim);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+
+  .project-caption{
+    margin-top: 1.6rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    color: var(--ink-dim);
+    text-align: center;
+    max-width: 34ch;
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  .project-caption strong{
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .scroll-hint{
+    position:absolute;
+    bottom: 2.4rem;
+    left:50%;
+    transform: translateX(-50%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap: 0.6rem;
+    color: var(--ink-dim);
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    transition: opacity .3s ease;
+    z-index: 4;
+  }
+
+  .scroll-hint .dot{
+    width: 1px;
+    height: 34px;
+    background: var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .scroll-hint .dot::after{
+    content:"";
+    position:absolute;
+    top:-100%; left:0;
+    width:100%; height:100%;
+    background: var(--accent);
+    animation: fall 1.6s ease-in-out infinite;
+  }
+  @keyframes fall{
+    0%{ top:-100%; }
+    60%{ top:100%; }
+    100%{ top:100%; }
+  }
+
+  /* ---------- Sección final: llamado a la acción + formulario + WhatsApp ---------- */
+  .cta-section{
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    padding: 6rem 1.5rem;
+  }
+
+  .cta-inner{
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  .cta-copy .eyebrow{
+    position: static;
+    margin-bottom: 1rem;
+  }
+
+  .cta-title{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(1.9rem, 3.6vw, 2.6rem);
+    line-height: 1.15;
+    margin-bottom: 1.2rem;
+  }
+
+  .cta-text{
+    color: var(--ink-dim);
+    line-height: 1.65;
+    max-width: 46ch;
+    margin-bottom: 2.2rem;
+  }
+
+  .whatsapp-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 1.6rem;
+    border-radius: 999px;
+    background: #25D366;
+    color: #0b0b0e;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .whatsapp-btn:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(37,211,102,0.3);
+  }
+  .whatsapp-btn svg{ width: 20px; height: 20px; fill: currentColor; }
+
+  .cta-form{
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    background: var(--bg-2);
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+  }
+
+  .form-row{ display: flex; flex-direction: column; gap: 0.4rem; }
+  .form-row label{
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .form-row input,
+  .form-row textarea{
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0.75rem 0.9rem;
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    resize: vertical;
+  }
+  .form-row input:focus,
+  .form-row textarea:focus{
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  /* trampa anti-spam invisible para bots (no la borres) */
+  .form-honeypot{ position: absolute; left: -9999px; opacity: 0; pointer-events: none; }
+
+  .submit-btn{
+    background: var(--accent);
+    color: #0b0b0e;
+    border: none;
+    border-radius: 8px;
+    padding: 0.9rem 1.4rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: filter .2s ease;
+  }
+  .submit-btn:hover{ filter: brightness(1.08); }
+  .submit-btn:disabled{ opacity: 0.6; cursor: not-allowed; }
+
+  .form-status{
+    font-size: 0.85rem;
+    min-height: 1.2em;
+    color: var(--ink-dim);
+  }
+  .form-status.success{ color: #7fd992; }
+  .form-status.error{ color: #e88a8a; }
+
+  @media (max-width: 860px){
+    .cta-inner{ grid-template-columns: 1fr; gap: 3rem; }
+  }
+
+  /* ---------- Accesibilidad: si el usuario pide menos movimiento, todo se ve fijo y listado ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .scroll-stage{ height: auto !important; }
+    .hero{
+      position: relative !important;
+      height: auto !important;
+      display: block !important;
+      padding: 5rem 1.5rem;
+    }
+    .hero-bg-image{ display:none; }
+    .hero::after{ display:none; }
+    .phase{
+      position: static !important;
+      display: flex !important;
+      opacity: 1 !important;
+      margin-bottom: 4.5rem;
+    }
+    .hero-text, .project-media{
+      transform: none !important;
+      filter: none !important;
+    }
+    .eyebrow, .subtitle, .project-caption{
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    .scroll-hint{ display:none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <section class="scroll-stage">
+    <div class="hero">
+      <div class="hero-bg-image" id="heroBgImage"></div>
+
+      <!-- Escena 1: el texto principal -->
+      <div class="phase" id="phaseText">
+        <p class="eyebrow" id="eyebrow">PORTAFOLIO</p>
+        <h1 class="hero-text" id="heroText">Carlos Parra Figueroa</h1>
+        <p class="subtitle" id="subtitle">Profesional titulado con experiencia en Diseño, Social Media, Paid Media, Desarrollo Web y Marketing Digital</p>
+      </div>
+
+      <!-- Escena 2: proyecto 1, entra por la izquierda -->
+      <div class="phase" id="phaseProject1">
+        <div class="project-media" id="project1Media">
+          <!-- reemplaza este div por: <img src="trabajos_hechos.gif" alt="Nombre del proyecto 1"> -->
+          <img src="trabajos_hechos.gif" alt="Nombre del proyecto 1">
+        </div>
+        <p class="project-caption" id="project1Caption"><strong>Diseño de piezas digitales profesionales</strong> — Conocimientos en gestión de proyectos digitales con foco en aumento de Conversiones y Ventas .</p>
+      </div>
+
+      <!-- Escena 3: proyecto 2, entra por la derecha -->
+      <div class="phase" id="phaseProject2">
+        <div class="project-media" id="project2Media">
+          <img src="portafolio.gif" alt="Portafolio">
+        </div>
+        <p class="project-caption" id="project2Caption"><strong>ESPECIALISTA EN WEB, ECOMMERCE, PAID MEDIA, SOCIAL MEDIA, REELS, SEO Y MKT.</strong> — Altamente adaptado al entorno tecnológico competitivo y cambiante.</p>
+      </div>
+
+      <div class="scroll-hint" id="scrollHint">
+        <span>Scroll</span>
+        <span class="dot"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section" id="contacto">
+    <div class="cta-inner">
+
+      <div class="cta-copy">
+        <p class="eyebrow">Hablemos de su marca proyecto digital</p>
+        <h2 class="cta-title">Contenidos creativos que dan resultados. Sin vueltas.</h2>
+        <p class="cta-text">
+          Me destaco por trabajar con la última tecnología digital con foco en resultados medibles. ¡Gracias por revisar este portafolio, hablemos!
+        </p>
+        <a
+          class="whatsapp-btn"
+          href="https://wa.me/56940348853?text=Hola%20freelanceSur%2C%20quiero%20cotizar%20un%20proyecto"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M17.6 6.3A8.9 8.9 0 0 0 12.03 3.5 8.94 8.94 0 0 0 3.1 12.4c0 1.58.41 3.12 1.19 4.48L3 21l4.24-1.27a8.95 8.95 0 0 0 4.79 1.38h.01a8.94 8.94 0 0 0 8.93-8.9c0-2.38-.93-4.62-2.61-6.31zM12.04 19.4h-.01a7.45 7.45 0 0 1-3.8-1.04l-.27-.16-2.83.85.85-2.75-.18-.28a7.4 7.4 0 0 1-1.14-3.96 7.44 7.44 0 0 1 7.43-7.4c1.98 0 3.85.77 5.25 2.17a7.36 7.36 0 0 1 2.17 5.24 7.44 7.44 0 0 1-7.47 7.33zm4.08-5.56c-.22-.11-1.31-.65-1.52-.72-.2-.08-.35-.11-.5.11-.15.22-.58.72-.71.87-.13.15-.26.16-.48.05-.22-.11-.94-.35-1.79-1.11-.66-.6-1.11-1.33-1.24-1.55-.13-.22-.01-.34.1-.45.1-.1.22-.26.33-.39.11-.13.15-.22.22-.37.07-.15.04-.28-.02-.39-.06-.11-.5-1.22-.69-1.67-.18-.44-.36-.38-.5-.38h-.43c-.15 0-.39.06-.59.28-.2.22-.77.76-.77 1.85s.79 2.15.9 2.3c.11.15 1.55 2.47 3.76 3.46.53.23.94.37 1.26.47.53.17 1.01.14 1.39.09.42-.06 1.31-.54 1.5-1.06.18-.52.18-.97.13-1.06-.05-.1-.2-.16-.42-.27z"/>
+          </svg>
+          WhatsApp
+        </a>
+      </div>
+
+      <form class="cta-form" id="contactForm" action="https://formspree.io/f/xkjwvlak" method="POST">
+        <div class="form-row">
+          <label for="name">Nombre</label>
+          <input type="text" id="name" name="name" autocomplete="name" required>
+        </div>
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="email" required>
+        </div>
+        <div class="form-row">
+          <label for="message">Menciona tu proyecto</label>
+          <textarea id="message" name="message" rows="4" required></textarea>
+        </div>
+        <!-- honeypot anti-spam: campo invisible, si un bot lo rellena, se descarta el envío -->
+        <input type="text" name="_gotcha" class="form-honeypot" tabindex="-1" autocomplete="off">
+
+        <button type="submit" class="submit-btn">Enviar mensaje</button>
+        <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+      </form>
+
+    </div>
+  </section>
+
+<script>
+  /* ---------- Formulario de contacto: envío sin recargar la página ---------- */
+  (function(){
+    const form   = document.getElementById('contactForm');
+    const status = document.getElementById('formStatus');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector('.submit-btn');
+
+      btn.disabled = true;
+      status.textContent = 'Enviando...';
+      status.className = 'form-status';
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (res.ok){
+          status.textContent = '¡Gracias! Tu mensaje fue enviado, te contactaremos pronto.';
+          status.classList.add('success');
+          form.reset();
+        } else {
+          throw new Error('Respuesta no OK');
+        }
+      } catch (err){
+        status.textContent = 'Hubo un problema al enviar. Intenta de nuevo o escríbenos por WhatsApp.';
+        status.classList.add('error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  })();
+
+(function(){
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) return; // el CSS de arriba ya deja todo visible y estático, sin necesidad de JS
+
+  const stage = document.querySelector('.scroll-stage');
+
+  const lerp  = (a, b, t) => a + (b - a) * t;
+  const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+
+  // progreso (0 a 1) dentro de un tramo [start, end] del scroll total
+  const seg = (p, range) => clamp((p - range[0]) / (range[1] - range[0]), 0, 1);
+
+  function getProgress(){
+    const rect = stage.getBoundingClientRect();
+    const scrollable = rect.height - window.innerHeight;
+    if (scrollable <= 0) return 1;
+    return clamp(-rect.top / scrollable, 0, 1);
+  }
+
+  /* ---------- Reparto del scroll total (0 a 1) entre las 3 escenas ---------- */
+  const TEXT_IN   = [0.00, 0.13];
+  const TEXT_OUT  = [0.19, 0.28];   // el texto sigue "viniendo" y se desvanece de cerca
+
+  const P1_IN     = [0.31, 0.44];
+  const P1_OUT    = [0.51, 0.60];
+
+  const P2_IN     = [0.63, 0.76];
+  const P2_HOLD_END = 0.84;         // proyecto 2 queda asentado hasta el final
+
+  /* ---------- Escena 1: texto ---------- */
+  const phaseText = document.getElementById('phaseText');
+  const text      = document.getElementById('heroText');
+  const eyebrow   = document.getElementById('eyebrow');
+  const subtitle  = document.getElementById('subtitle');
+
+  function renderText(p){
+    let scale, z, blur, tiltX, phaseOpacity;
+
+    if (p <= TEXT_IN[1]){
+      const ep = easeOutCubic(seg(p, TEXT_IN));
+      scale = lerp(0.22, 1, ep);
+      z     = lerp(-1600, 0, ep);
+      blur  = lerp(16, 0, ep);
+      tiltX = lerp(28, 0, ep);
+      phaseOpacity = clamp(seg(p, TEXT_IN) / 0.4, 0, 1);
+    } else if (p <= TEXT_OUT[0]){
+      // asentado, totalmente visible
+      scale = 1; z = 0; blur = 0; tiltX = 0; phaseOpacity = 1;
+    } else {
+      // sigue acercándose de más -> se desenfoca y se desvanece, como si pasara de largo
+      const t = seg(p, TEXT_OUT);
+      scale = lerp(1, 2.3, t);
+      z     = lerp(0, 900, t);
+      blur  = lerp(0, 22, t);
+      tiltX = 0;
+      phaseOpacity = lerp(1, 0, t);
+    }
+
+    text.style.transform = `translateZ(${z}px) scale(${scale}) rotateX(${tiltX}deg)`;
+    text.style.filter = `blur(${blur}px)`;
+    phaseText.style.opacity = phaseOpacity;
+    phaseText.style.pointerEvents = phaseOpacity > 0.05 ? 'auto' : 'none';
+
+    // capas de "extrusión" 3D, solo mientras entra
+    const epShadow = p <= TEXT_IN[1] ? easeOutCubic(seg(p, TEXT_IN)) : 1;
+    const depthLayers = lerp(14, 0, epShadow);
+    let shadow = '';
+    for (let i = 1; i <= 14; i++){
+      const o = clamp(depthLayers - i, 0, 1) > 0 ? 0.9 : 0;
+      shadow += `${i * 0.6}px ${i * 0.6}px 0 rgba(232,163,61,${(0.05 * o).toFixed(3)}), `;
+    }
+    text.style.textShadow = shadow.slice(0, -2);
+
+    // eyebrow / subtítulo: aparecen al asentarse, se van junto con el texto
+    let revealT;
+    if (p < TEXT_IN[1]) revealT = 0;
+    else if (p < TEXT_OUT[0]) revealT = clamp((p - TEXT_IN[1]) / (TEXT_OUT[0] - TEXT_IN[1]), 0, 1);
+    else revealT = lerp(1, 0, seg(p, TEXT_OUT));
+
+    eyebrow.style.opacity = revealT;
+    eyebrow.style.transform = `translateY(${lerp(10, 0, revealT)}px)`;
+    subtitle.style.opacity = revealT;
+    subtitle.style.transform = `translateY(${lerp(14, 0, revealT)}px)`;
+  }
+
+  /* ---------- Escenas 2 y 3: proyectos, cada uno con su eje ---------- */
+  // axis: -1 = entra/sale por la izquierda, 1 = entra/sale por la derecha
+  function makeProjectRenderer({ phase, media, caption, axis, IN, OUT }){
+    return function(p){
+      let scale, z, blur, rotY, xOffset, phaseOpacity;
+
+      if (p < IN[0]){
+        phaseOpacity = 0;
+        scale = 0.3; z = -1500; blur = 15; rotY = axis * 22; xOffset = axis * 42;
+      } else if (p <= IN[1]){
+        const ep = easeOutCubic(seg(p, IN));
+        scale = lerp(0.3, 1, ep);
+        z     = lerp(-1500, 0, ep);
+        blur  = lerp(15, 0, ep);
+        rotY  = lerp(axis * 22, 0, ep);
+        xOffset = lerp(axis * 42, axis * 12, ep);
+        phaseOpacity = clamp(seg(p, IN) / 0.35, 0, 1);
+      } else if (!OUT || p <= OUT[0]){
+        // asentado
+        scale = 1; z = 0; blur = 0; rotY = 0; xOffset = axis * 12; phaseOpacity = 1;
+      } else if (p <= OUT[1]){
+        const t = seg(p, OUT);
+        scale = lerp(1, 2.2, t);
+        z     = lerp(0, 800, t);
+        blur  = lerp(0, 20, t);
+        rotY  = lerp(0, axis * 14, t);
+        xOffset = lerp(axis * 12, axis * 46, t); // sigue saliendo por SU mismo eje
+        phaseOpacity = lerp(1, 0, t);
+      } else {
+        phaseOpacity = 0;
+        scale = 2.2; z = 800; blur = 20; rotY = axis * 14; xOffset = axis * 46;
+      }
+
+      media.style.transform = `translateX(${xOffset}%) translateZ(${z}px) scale(${scale}) rotateY(${rotY}deg)`;
+      media.style.filter = `blur(${blur}px)`;
+      phase.style.opacity = phaseOpacity;
+      phase.style.pointerEvents = phaseOpacity > 0.05 ? 'auto' : 'none';
+
+      let revealT;
+      const holdEnd = OUT ? OUT[0] : P2_HOLD_END;
+      if (p < IN[1]) revealT = 0;
+      else if (!OUT || p < OUT[0]) revealT = clamp((p - IN[1]) / (holdEnd - IN[1]), 0, 1);
+      else revealT = lerp(1, 0, seg(p, OUT));
+
+      caption.style.opacity = revealT;
+      caption.style.transform = `translateY(${lerp(14, 0, revealT)}px)`;
+    };
+  }
+
+  const renderProject1 = makeProjectRenderer({
+    phase:   document.getElementById('phaseProject1'),
+    media:   document.getElementById('project1Media'),
+    caption: document.getElementById('project1Caption'),
+    axis: -1,
+    IN: P1_IN,
+    OUT: P1_OUT
+  });
+
+  const renderProject2 = makeProjectRenderer({
+    phase:   document.getElementById('phaseProject2'),
+    media:   document.getElementById('project2Media'),
+    caption: document.getElementById('project2Caption'),
+    axis: 1,
+    IN: P2_IN,
+    OUT: null // el último proyecto queda asentado hasta el final del recorrido
+  });
+
+  /* ---------- Indicador de scroll: solo al principio ---------- */
+  const scrollHint  = document.getElementById('scrollHint');
+  const heroBgImage = document.getElementById('heroBgImage');
+
+  /* ---------- Un solo loop de scroll para todas las escenas ---------- */
+  let ticking = false;
+  function renderAll(){
+    ticking = false;
+    const p = getProgress();
+    renderText(p);
+    renderProject1(p);
+    renderProject2(p);
+    scrollHint.style.opacity = clamp(1 - p / 0.08, 0, 1);
+
+    // --- Fondo: se acerca/aleja con TODO el recorrido, mucho más lento que el resto ---
+    const bgScale = lerp(1.15, 1.45, p);   // rango chico = movimiento lento (parallax)
+    const bgBlur  = lerp(1, 26, p);       // se desenfoca un poco más al acercarse
+    heroBgImage.style.transform = `scale(${bgScale})`;
+    heroBgImage.style.filter = `blur(${bgBlur}px)`;
+  }
+  function onScroll(){
+    if (!ticking){
+      requestAnimationFrame(renderAll);
+      ticking = true;
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  renderAll();
+})();
+</script>
+
+</body>
+</html>
